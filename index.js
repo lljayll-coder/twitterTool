@@ -1,54 +1,62 @@
-const readWriteClient = require('./readWrite.js');
-const dotenv = require('dotenv');
+import getPeopleFile from './getPeopleFile.js';
+import getTweets from './getTweets.js';
 
-dotenv.config();
+let counter = 0; //keeps track of which person the prgram is currently looking at in the people.json file
 
-const newTweet = async(message) => {
+const checkForLatestTweet = async() => {
 
-    try {
-        await readWriteClient.v2.tweet(message);
-        console.log('Tweet posted succesfully')
-    } catch (error) {
-        console.log('Tweet could not be posted ' + error)
-    }
+    const peopleToFollow = await getPeopleFile(); //gets contents of people.json
+    const currentPersonOfInterest = peopleToFollow[counter][0]; //set current person of interest to counter value
+    const currentPersonOfInterestID = peopleToFollow[counter][1]; //set current person of interest to counter value
+    const currentPersonTweet = await getTweets(currentPersonOfInterest) //get current person's last tweet
 
-};
-
-const getUserID = async(ID) => {
-
-    try {
-        const userID = await readWriteClient.v2.userByUsername(ID);
-        return userID
-    } catch (error) {
-        console.log('Error: can not fetch numeric ID ' + error)
-    }
-    
+    console.log('---------------------------------------------------------------') //to separate console logs for more readability
+    console.log(counter)
+    console.log('Last tweet ID: ' + currentPersonTweet[0].id)
+    console.log('Last tweet: ' + currentPersonTweet[0].text)
+    console.log('')
+    compareToFile(currentPersonTweet[0].id, currentPersonOfInterestID, peopleToFollow)
+ 
 }
 
-const getTweets = async(userName) => {
+const compareToFile = (currentTweetID, currentPersonOfInterestID, peopleToFollow) => {
 
-    const ID = await getUserID(userName);
+    console.log('Comparing to records')
 
-    try {
+    if (currentTweetID == currentPersonOfInterestID) {
+        console.log("Tweet is on record. Scanning for next tweet")
+    }
 
-    const tweets = await readWriteClient.v2.userTimeline(ID.data.id, { exclude: 'replies' })
-    
-    console.log(tweets.tweets)
+    else if (currentTweetID != currentPersonOfInterestID) {
+        console.log("Tweet is new and not on record")
+    }
+    else {
+        console.log('Error, could not determine if tweet is on record')
+    }
+
+    restartLoop(peopleToFollow)
+
+}
+
+const restartLoop = (peopleToFollow) => {
+
+    setTimeout(function() {
         
-    } catch (error) {
-        console.log('Error: can not fetch tweets ' + error)
-    }
+       if (counter < Object.keys(peopleToFollow).length-1) {
+        console.log("Checking for next ID on file...")
+        counter = counter + 1;
+       }
+       else {
+        counter = 0;
+        console.log("End of file reached. Scanning tweets from first ID on file.")
+        }
+        
+        checkForLatestTweet()
+
+      }, 10000);
+
     
 
 }
 
-const replyToTweet = async(tweetID) => {
-
-    await readWriteClient.v2.reply('He deserves the support 100%', tweetID);
-
-}
-
-//replyToTweet('1566892187119493121')
-
-getTweets('HhqJason')
-
+checkForLatestTweet()

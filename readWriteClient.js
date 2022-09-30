@@ -1,6 +1,6 @@
 
-const { TwitterApi } = require('twitter-api-v2');
-const dotenv = require('dotenv');
+import { TwitterApi } from 'twitter-api-v2';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -13,4 +13,4 @@ const client = new TwitterApi({
 
 const readWriteClient = client.readWrite;
 
-module.exports = readWriteClient
+export default readWriteClient
