@@ -1,6 +1,6 @@
-const fs = require('fs');
+import fs from 'fs';
 
-const writeTweetIDToFile = (userName, tweetID) => { 
+const writeTweetIDToFile = (tweetID, counter) => { 
 
     fs.readFile('people.json', (err, data) => {
 
@@ -8,7 +8,9 @@ const writeTweetIDToFile = (userName, tweetID) => {
 
         let file =  JSON.parse(data); //convert file to json format
 
-        file[userName] = tweetID //modify file
+        
+        console.log(counter)
+        file[0][1] = tweetID //modify file
 
         let final = JSON.stringify(file);
         
